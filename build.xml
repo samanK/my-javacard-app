@@ -1,0 +1,26 @@
+<project name="MyJavaCardApp" default="convert" basedir=".">
+  <property name="jc.home" value="${env.JC_HOME}"/>
+  <property name="classes.dir" value="build/classes"/>
+  <property name="dist.dir" value="dist"/>
+
+  <target name="clean">
+    <delete dir="${classes.dir}"/>
+    <delete dir="${dist.dir}"/>
+  </target>
+
+  <target name="compile">
+    <mkdir dir="${classes.dir}"/>
+    <javac srcdir="applet" destdir="${classes.dir}" source="1.4" target="1.4" bootclasspath="${jc.home}/api_export_files/java/lang/javacard.framework.jar"/>
+  </target>
+
+  <target name="convert" depends="compile">
+    <mkdir dir="${dist.dir}"/>
+    <java classname="com.sun.javacard.converter.Converter" fork="true">
+      <arg line="-out CAP -classdir ${classes.dir} -exportpath ${jc.home}/api_export_files -applet 0x01:0x02:0x03:0x04:0x05 MyPackage.MyApplet MyPackage 0x01:0x02:0x03:0x04:0x05"/>
+      <classpath>
+        <pathelement location="${jc.home}/lib/converter.jar"/>
+        <pathelement location="${jc.home}/lib/offcardverifier.jar"/>
+      </classpath>
+    </java>
+  </target>
+</project>
