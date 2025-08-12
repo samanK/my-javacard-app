@@ -1,0 +1,45 @@
+name: Build Java Card CAP
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout source
+      uses: actions/checkout@v4
+
+    - name: Install JDK 1.4
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y wget unzip
+        wget https://archive.org/download/java140/j2sdk-1_4_2_19-linux-i586.bin
+        chmod +x j2sdk-1_4_2_19-linux-i586.bin
+        yes | ./j2sdk-1_4_2_19-linux-i586.bin
+        export JAVA_HOME=$PWD/j2sdk1.4.2_19
+        export PATH=$JAVA_HOME/bin:$PATH
+        java -version
+
+    - name: Install Java Card SDK
+      run: |
+        mkdir -p /opt/javacard
+        unzip java_card_kit-2_2_1.zip -d /opt/javacard
+        export JC_HOME=/opt/javacard/java_card_kit-2_2_1
+        ls $JC_HOME
+
+    - name: Build CAP file
+      run: |
+        export JAVA_HOME=$PWD/j2sdk1.4.2_19
+        export PATH=$JAVA_HOME/bin:$PATH
+        export JC_HOME=/opt/javacard/java_card_kit-2_2_1
+        ant -f build.xml
+
+    - name: Upload CAP file
+      uses: actions/upload-artifact@v4
+      with:
+        name: cap-files
+        path: dist/*.cap
